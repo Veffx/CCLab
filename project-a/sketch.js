@@ -5,6 +5,12 @@ Project A: Generative Creatures
 CCLaboratories Biodiversity Atlas 
 */
 
+function setup() {
+  createCanvas(800, 500);
+  canvas.id("p5-canvas");
+  canvas.parent("p5-canvas-container");
+  angleMode(DEGREES);
+}
 let circlesize;
 let horizonLine=100;
 let time = 15;
@@ -30,12 +36,6 @@ let temp=500-500*5/16*1.2-20+140;
 let w=500-500*5/16*1.2-20+140;
 let w2=500-500*5/16*1.2-20+140;
 let waterLevel=500-500*5/16*1.2-20+140;
-function setup() {
-  createCanvas(800, 500);
-  canvas.id("p5-canvas");
-  canvas.parent("p5-canvas-container");
-  angleMode(DEGREES);
-}
 function draw() {
  background(255);
   fill(150,100,10);
