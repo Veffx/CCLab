@@ -1,7 +1,10 @@
 let egg1;
+let egg2;
 function setup() {
   let canvas = createCanvas(800, 500);
   canvas.parent("p5-canvas-container");
+  egg1 =new Egg(100);
+  egg2 =new Egg(200);
 }
 
 function draw() {
@@ -10,12 +13,14 @@ function draw() {
   egg1.dispaly()
 }
 class Egg{
-  constructor(){
-    this.x=200;
+  constructor(startX){
+    this.x=startX;
     this.y=200;
     this.radius =50;
     this.speedx = 1;
     this.speedy = 1;
+    this.diaX=80;
+    this.diaY=130;
     }
     update(){
       this.x+=this.speedx;
@@ -30,7 +35,10 @@ class Egg{
   dispaly(){
     push();
     translate(this.x,this.y);
-    circle(0,0,this.radius);
+    noStroke();
+    fill(255,200);
+    ellipse(0,0, this.diaX, this.diaY)
+    arc(0,0, this.diaX, this.diaX,0,PI)
     pop();
   }
   
