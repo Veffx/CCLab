@@ -3,14 +3,17 @@ let egg2;
 function setup() {
   let canvas = createCanvas(800, 500);
   canvas.parent("p5-canvas-container");
-  egg1 =new Egg(100);
-  egg2 =new Egg(200);
-}
+  for(leti=0;i<100;i++){
+    let egg =new Egg(random(0,width),random(0,height));
+    basket.push(egg)
+}}
 
 function draw() {
   background(220);
-  egg1.update()
-  egg1.dispaly()
+ for(let i=0; i<basket.length; i++){
+  basket[i].update();
+  basket[i].diaplay();
+ }
 }
 class Egg{
   constructor(startX){
