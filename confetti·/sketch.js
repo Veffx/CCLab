@@ -55,9 +55,43 @@ class Confetti{
 
       fill(this.confettiHue, 255,255);
       noStroke();
-      circle(0, 0, this.size);
+      this.drawSkull(0, 0, this.size);
    
     pop();
+  }
+  drawSkull(x, y, size) {
+    let eyeSize = size * 0.2;
+    let noseSize = size * 0.1;
+    let jawHeight = size * 0.3;
+    let toothWidth = size * 0.05;
+    let toothHeight = jawHeight * 0.6;
+  
+    // Skull outline
+    noStroke();
+    ellipse(x, y - jawHeight / 2, size, size); // Main skull
+  
+    rectMode(CENTER);
+    rect(x, y + jawHeight * 0.8, size * 0.6, jawHeight, 20); // Jaw
+  
+    // Eyes
+    fill(0);
+    ellipse(x - size * 0.25, y - size * 0.2, eyeSize, eyeSize);
+    ellipse(x + size * 0.25, y - size * 0.2, eyeSize, eyeSize);
+  
+    // Nose
+    triangle(
+      x - noseSize * 0.5, y,
+      x + noseSize * 0.5, y,
+      x, y + noseSize
+    );
+  
+    // Teeth (simple vertical lines)
+    stroke(0);
+    strokeWeight(2);
+    for (let i = -2; i <= 2; i++) {
+      let tx = x + i * toothWidth;
+      line(tx, y + jawHeight * 0.4, tx, y + jawHeight * 0.4 + toothHeight);
+    }
   }
 
 }
