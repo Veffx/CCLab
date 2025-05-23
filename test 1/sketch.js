@@ -16,33 +16,31 @@ function setup() {
 function draw() {
   background(backgroundHUE, 10, 190);
 
-  for (let i = 0; i < 5; i++) {
-    confettis.push(new Confetti(width / 2, height / 2));
-  }
+    confettis.push(new Confetti(width / 2, 0));
 
-  for (let confetti of confettis) {
-    confetti.update();
-    confetti.display();
-  }
+    for (let i = 0; i < confettis.length; i++) {
+      confettis[i].update();
+      confettis[i].display();
+    }
 
-  confettis = confettis.filter(c => !c.offScreen); // 移除太远的
+    let remainingConfettis = [];
+    for (let i = 0; i < confettis.length; i++) {
+      if (!confettis[i].offScreen) {
+        remainingConfettis.push(confettis[i]);
+      }
+    }
+    confettis = remainingConfettis;
 
   text(confettis.length, 20, 20);
-}
-
-function mousePressed() {
-  for (let i = 0; i < numConfetti; i++) {
-    confettis.push(new Confetti(mouseX, mouseY));
-  }
 }
 
 class Confetti {
   constructor(startX, startY) {
     this.x = startX;
     this.y = startY;
-    this.size = random(5, 10);
+    this.size = random(10, 25);
     this.confettiHue = random(255);
-    this.speedX = random(-2, 2);
+    this.speedX = random(-4, 4);
     this.speedY = random(-1, -3);
     this.gravity = 0.2;
     this.bounceDamping = 0.6;
@@ -75,7 +73,7 @@ class Confetti {
       }
     }
 
-    if (this.y > height + 100) {
+    if (this.y <-10 ) {
       this.offScreen = true;
     }
   }
