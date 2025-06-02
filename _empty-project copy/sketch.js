@@ -1,197 +1,170 @@
-let w = [];
-let timer = 0;
-let player_input = "";
-let game = true;
-let begin = false;
-let con = true;
-let end = false;
-let score = 5000;
-let inCommunication = false;
-let showPhone = false;
-let phoneInput = "";
-let inputActive = false;
-let bgm, beep, commMusic, endMusic;
-let endMusicPlayed = false;
+let fragments =[];
+let fragmentImages =[];
+let fragmentSounds=[];
+let placedCount= 0;
+let finalMessageShow=false;
+let messageSound;
 
-function preload() {
-  beep = loadSound('assets/sound/beep.mp3');
-  bgm = loadSound('assets/sound/bgm.mp3');
-  commMusic = loadSound('assets/sound/comm.mp3');
-  endMusic = loadSound('assets/sound/end.mp3');
+function preload(){
+  fragmentImages[0]=loadImage('assets/images/0.jpg');
+  fragmentSounds[0]=loadSound('assets/sound/0.mp3');
+  fragmentImages[1]=loadImage('assets/images/1.jpg');
+  fragmentSounds[1]=loadSound('assets/sound/1.mp3');
+  fragmentImages[2]=loadImage('assets/images/2.jpg');
+  fragmentSounds[2]=loadSound('assets/sound/2.mp3');
+  fragmentImages[3]=loadImage('assets/images/3.jpg');
+  fragmentSounds[3]=loadSound('assets/sound/3.mp3');
+  messageSound =loadSound('assets/sound/message.mp3');
 }
 
 function setup() {
   let canvas = createCanvas(800, 500);
   canvas.parent("p5-canvas-container");
-  textAlign(CENTER, CENTER);
-  textSize(24);
+  textSize(18);
+  textFont('Georgia');
+  textAlign(CENTER);
+
+  for(i=0;i<4;i++){
+    fragments.push(new Fragment(
+      random(50,700),random(100,400),120,120,fragmentImages[i],fragmentSounds[i],i
+    ));
+  }
 }
 
-function draw() {
-  background(0);
-
-  if (inCommunication) {
-    if (!commMusic.isPlaying()) {
-      bgm.stop();
-      endMusic.stop();
-      commMusic.loop();
-    }
-    fill(255);
-    textSize(20);
-    text("Don't keep everything to yourself.\nTalk to us — we're always here for you.", width / 2, height / 2);
-    return;
-  }
-
-  if (!begin) {
-    fill(255);
-    text("Press R to escape depression by working.", width / 2, height / 2);
-    return;
-  }
-
-  fill(255, 215, 0);
-  textAlign(LEFT, TOP);
-  textSize(18);
-  text("$" + score, 20, 20);
-
-  if (showPhone) {
-    drawPhoneInterface();
-    return;
-  }
-
-  if (game) {
-    if (!bgm.isPlaying()) {
-      commMusic.stop();
-      endMusic.stop();
-      bgm.loop();
-    }
-
-    timer++;
-
-    // 每30帧生成一次新的 work,work（约每0.5秒）
-    if (timer % 30 === 0) {
-      w.push(new Work());
-    }
-
-    for (let i = w.length - 1; i >= 0; i--) {
-      w[i].update();
-      w[i].display();
-      w[i].gameOver(i);
-      if (player_input === "work,work") {
-        w.splice(i, 1);
-        player_input = "";
-      }
-    }
-  } else {
-    if (!endMusicPlayed) {
-      bgm.stop();
-      commMusic.stop();
-      endMusic.loop();
-      endMusicPlayed = true;
-    }
-    fill(255);
-    textSize(32);
-    text("You Are Broke! qwq\nWant another job? Press R", width / 2, height / 2);
-  }
-
+function draw(){
+  background(10,20,40);
+  // stroke(255);
+  // noFill();
+  // rectMode(CENTER);
+  // rect(width/2,height/2,520,150);
   fill(255);
-  textSize(18);
-  textAlign(RIGHT, BOTTOM);
-  text(player_input, width - 20, height - 20);
-
-  textAlign(LEFT, TOP);
-  if (con) {
-    text("✅", 60, 20);
-  } else {
-    text("❌", 60, 20);
+  noStroke();
+  text("Drag the puzzle pieces and put our memories back in place",width/2,40);
+  // text(placedCount,width/2+30,height/2);
+  // text(fragments.length,width/2,height/2);
+  // text(checkFragmentsAligned(),width/2+60,height/2);
+  
+  for(let frag of fragments){
+    frag.update();
+    frag.display();
+  }
+  if(checkFragmentsAligned() && !finalMessageShow){
+    finalMessageShow=true;
+    userStartAudio();
+    setTimeout(()=>{
+      messageSound.play();
+      showFinalMessage();
+    },1000);
+  }
+  if(finalMessageShow){
+    fill(255,230,250);
+    textSize(22);
+    
+    text("Dear Future:\nwe have deeply loved the Earth, but we didn't cherish it.\nPlease do better than us.",width/2,height-60);
   }
 }
 
-function keyTyped() {
-  if (inputActive) {
-    if (key === '\n') return;
-    phoneInput += key;
-    if (phoneInput === "133xxx333") {
-      inCommunication = true;
-      inputActive = false;
-      showPhone = false;
+function mousePressed(){
+  for(let frag of fragments){
+    frag.pressed(mouseX,mouseY);
+  }
+}
+
+function mouseReleased(){
+  for(let frag of fragments){
+    frag.released();
+  }
+}
+
+function showFinalMessage(){
+  //push();
+  fill(255,230,250);
+  textSize(22);
+  text("Dear Future:\nwe have deeply loved the Earth, but we have also harmed it.\nPlease do better than us.",width/2,height-60);
+  //pop();
+}
+
+function checkFragmentsAligned(){
+  if(placedCount<fragments.length) return false;
+  let sorted = [...fragments].sort((a,b)=>a.x-b.x)
+  for(let i=0;i<sorted.length;i++){
+    if(sorted[i].id!==i) return false;
+  }
+  for(let i=1;i<sorted.length;i++){
+    let dx = sorted[i].x-sorted[i-1].x;
+    let dy = abs(sorted[i].y-sorted[i-1].y);
+    if(dx<90||dx>140) return false;
+    if(dy>50)return false;
+  }
+  return true;
+}
+
+
+class Fragment{
+  constructor(x,y,w,h,img,sound,id){
+    this.x=x;
+    this.y=y;
+    this.w=w;
+    this.h=h;
+    this.img=img; 
+    this.sound=sound;
+    this.id=id;
+
+    this.offsetX=0;
+    this.offsetY=0;
+    this.dragging=false;
+    this.placed=false;
+
+   //this.targetX=100+ id*130;
+    //this.targetY=100;
+    //this.threshold=100;
+  }
+  display(){
+    image(this.img,this.x,this.y,this.w,this.h);
+    //if(!this.placed){
+     // image(this.img,this.x,this.y,this.w,this.h);
+    // }else{
+    //   for(let i = 0;i<this.w;i+=10){
+    //     for(let j=0;j<this.h;j+=10){
+    //       let c=this.img.get(i,j);
+    //       fill(c);
+    //       noStoke();
+    //       rect(this.targetX+i,this.targetY+j,10,10);
+    //     }
+    //   }
+    // }
+  }
+
+  pressed(mx,my){
+    if(mx>this.x&&
+      mx<this.x+this.w&&
+      my>this.y&&
+      my<this.y+this.h&&
+      !this.placed
+    ){
+      this.dragging=true;
+      this.offsetX=mx-this.x;
+      this.offsetY=my-this.y;
     }
-    return;
   }
 
-  player_input += key;
-  let target = "work,work";
-  if (!target.startsWith(player_input)) {
-    player_input = player_input.slice(0, -1);
-    con = false;
-  } else {
-    con = true;
-  }
-}
-
-function keyPressed() {
-  if (key === "r" || key === "R") {
-    begin = true;
-    game = true;
-    score = 5000;
-    w = [];
-    timer = 0;
-    inCommunication = false;
-    showPhone = true;
-    phoneInput = "";
-    inputActive = false;
-    endMusic.stop();
-    endMusicPlayed = false;
-    bgm.loop();
-  }
-}
-
-function mousePressed() {
-  if (showPhone && mouseX > width / 2 - 40 && mouseX < width / 2 + 40 &&
-      mouseY > height / 2 + 40 && mouseY < height / 2 + 80) {
-    inputActive = true;
-  }
-}
-
-function drawPhoneInterface() {
-  fill(50);
-  rect(width / 2 - 100, height / 2 - 150, 200, 300, 20);
-  fill(255);
-  text("Friend's number:", width / 2, height / 2 - 60);
-  textSize(18);
-  text(phoneInput || "click to input", width / 2, height / 2);
-  fill(200);
-  rect(width / 2 - 40, height / 2 + 40, 80, 40, 10);
-  fill(0);
-  text("Input", width / 2, height / 2 + 60);
-}
-
-class Work {
-  constructor() {
-    this.x = width / 2;
-    this.y = height;
-    this.textsize = 36;
-    this.speed = 1;
-    this.acc = 0.000001 * timer;
+  released(){
+    if(this.dragging){
+      this.dragging =false;
+      //if(dist(this.x,this.y,this.targetX,this.targetY)<this.threshold){
+        //  this.x=this.targetX;
+        //  this.y=this.targetY;
+        // this.placed=true;
+        // this.sound.play();
+        placedCount++;
+      //}
+    }
   }
 
-  update() {
-    this.y -= this.speed;
-    this.speed += this.acc;
-  }
-
-  display() {
-    fill(255, 0, 0);
-    textSize(this.textsize);
-    text("work,work", this.x, this.y);
-  }
-
-  gameOver(index) {
-    if (this.y <= 0) {
-      score -= 1000;
-      w.splice(index, 1);
-      if (score <= 0) {
-        game = false;
-      }
+  update(){
+    if(this.dragging){
+      this.x =mouseX -this.offsetX;
+      this.y =mouseY-this.offsetY;
     }
   }
 }
